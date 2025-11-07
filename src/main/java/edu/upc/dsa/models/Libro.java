@@ -5,14 +5,14 @@ public class Libro {
     String titulo;
     String editorial;
     String añoPublicacion;
-    Integer numeroEdicion;
+    String numeroEdicion;
     String autor;
     String tematica;
     LibrosCatalogado librocatalogado;
 
 
     public Libro(String ISBN, String titulo, String editorial, String añoPublicacion,
-                 Integer numeroEdicion, String autor, String tematica) {
+                 String numeroEdicion, String autor, String tematica) {
         this.ISBN = ISBN;
         this.titulo = titulo;
         this.editorial = editorial;
@@ -49,10 +49,10 @@ public class Libro {
     public void setAñoPublicacion(String año){
         this.añoPublicacion = año;
     }
-    public Integer getNumeroEdicion() {
+    public String getNumeroEdicion() {
         return numeroEdicion;
     }
-    public void setNumeroEdicion(Integer numeroEdicion) {
+    public void setNumeroEdicion(String numeroEdicion) {
         this.numeroEdicion = numeroEdicion;
     }
     public String getAutor() {
