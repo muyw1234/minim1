@@ -1,1 +1,1 @@
-# rest-example
+# Minim 1
