@@ -12,11 +12,11 @@ public interface BibliotecaManager {
 
     //libro
     public Libro addLibro(String ISBN, String titulo, String editorial,
-                          String añoPublicacion, String numeroEdicion,
+                          String anoPublicacion, String numeroEdicion,
                           String autor, String tematica);
 
-    public MontonDeLibros añadirAlMonton (List<Libro> libros);
-    public List<LibrosCatalogado> catalogar ( MontonDeLibros montonDeLibros);
+    //public MontonDeLibros añadirAlMonton (List<Libro> libros);
+    public LibrosCatalogado catalogar ();
 
     //prestar
     public Prestar prestarLibro(String titulo, String dni, String dataDeDevolucion);

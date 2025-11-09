@@ -1,28 +1,37 @@
 package edu.upc.dsa.models;
 
+import java.util.LinkedList;
 import java.util.List;
+import java.util.UUID;
 
 public class MontonDeLibros {
     String montonId;
     List<Libro> Montonlibros;
 
-    public MontonDeLibros(  List<Libro> Montonlibros) {
-        this.Montonlibros = Montonlibros;
+    public MontonDeLibros() {
+        this.Montonlibros = new LinkedList<>();
+        this.montonId = UUID.randomUUID().toString();
+
     }
 
-    public String getMontonId() {
-        return montonId;
+    public void apilar(Libro libro) {
+        Montonlibros.add(libro);
     }
-    public void setMontonId(String montonId) {
-        this.montonId = montonId;
+
+    public Libro desapilar() {
+        if (Montonlibros.isEmpty()) return null;
+        return Montonlibros.remove(Montonlibros.size() - 1);
     }
-    public List<Libro> getMontonlibros() {
+
+    public boolean estaLleno() {
+        return Montonlibros.size() >= 10;
+    }
+
+    public boolean estaVacio() {
+        return Montonlibros.isEmpty();
+    }
+
+    public List<Libro> getLibros() {
         return Montonlibros;
-    }
-    public Integer getNumerosLibrosEnMonton(){
-        return Montonlibros.size();
-    }
-    public void setMontonlibros(List<Libro> Montonlibros) {
-        this.Montonlibros = Montonlibros;
     }
 }

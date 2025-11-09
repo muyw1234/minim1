@@ -6,17 +6,18 @@ import java.util.UUID;
 public class Prestar {
     String prestarId;
     String lectordni;
-    Libro libro;
+    String libroTitulo;
     LocalDate dataDePrestar;
     String dataDeDevolucion;
-
-    public Prestar( String lectorId, Libro libroId,
-                   LocalDate dataDePrestar, String dataDeDevolucion) {
+    String estado;
+    public Prestar( String libroTitulo, String lectordni ,
+                    String dataDeDevolucion) {
         this.prestarId = UUID.randomUUID().toString();
-        this.lectordni = lectorId;
-        this.libro = libroId;
-        this.dataDePrestar = dataDePrestar;
+        this.lectordni = lectordni;
+        this.libroTitulo = libroTitulo;
+        this.dataDePrestar = LocalDate.now();
         this.dataDeDevolucion = dataDeDevolucion;
+        this.estado = "En tramite";
     }
 
     public Prestar() {}
@@ -33,11 +34,11 @@ public class Prestar {
     public void setLectordni(String lectordni) {
         this.lectordni = lectordni;
     }
-    public Libro getLibroId() {
-        return libro;
+    public String getLibroTitulo() {
+        return libroTitulo;
     }
-    public void setLibroId(Libro libroId) {
-        this.libro = libroId;
+    public void setLibroTitulo(String libroTitulo) {
+        this.libroTitulo = libroTitulo;
     }
     public LocalDate getDataDePrestar() {
         return dataDePrestar;
@@ -51,4 +52,6 @@ public class Prestar {
     public void setDataDeDevolucion(String dataDeDevolucion) {
         this.dataDeDevolucion = dataDeDevolucion;
     }
+    public String getEstado() {return estado;}
+    public void setEstado(String estado) {this.estado = estado;}
 }

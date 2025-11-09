@@ -1,5 +1,7 @@
 package edu.upc.dsa.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 public class Libro {
     String ISBN;
     String titulo;
@@ -21,6 +23,9 @@ public class Libro {
         this.autor = autor;
         this.tematica = tematica;
     }
+
+    @JsonIgnore
+    private LibrosCatalogado catalogado;
 
     public Libro() {}
 

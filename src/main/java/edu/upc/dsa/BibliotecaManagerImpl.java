@@ -19,31 +19,22 @@ public class BibliotecaManagerImpl implements BibliotecaManager {
         return instance;
     }
 
-    //key: email
-    Map<String, Lector> listlectors;
-    List<Prestar> listprestars;
-    Queue<Libro> listLibros;
-    List<LibrosCatalogado> listLibrosCatalogado;
+    //key: dni
+    Map<String, Lector> Maplectors = new HashMap();
+    List<Prestar> listprestars = new ArrayList<>();
     //key: titulo del libro
-    Map<String, LibrosCatalogado> MapLibrosCatalogado;
-    List<MontonDeLibros> listMontonDeLibros;
-    Map<String, List<Prestar>> MapPrestar;
+    Map<String, LibrosCatalogado> MapLibrosCatalogado = new HashMap<>();
+    List<MontonDeLibros> listMontonDeLibros = new ArrayList<>();
 
-    private BibliotecaManagerImpl() {
-        listlectors = new HashMap<>();
-        listprestars = new ArrayList<>();
-        listLibros = new LinkedList<>();
-        listMontonDeLibros = new ArrayList<>();
-        MapLibrosCatalogado = new HashMap<>();
-        listLibrosCatalogado = new ArrayList<>();
-        MapPrestar = new HashMap<>();
-    }
+    private BibliotecaManagerImpl() {}
+
+
 
     @Override
     public Lector addLector(String nombrelector, String apellido, String dni, String fechaNacimiento, String ligarNacimiento, String emai) {
         logger.info("addLector");
         Lector l = new Lector(nombrelector, apellido, dni, fechaNacimiento, ligarNacimiento, emai);
-        listlectors.put(emai, l);
+        Maplectors.put(dni, l);
         logger.info("addedLector: " + l);
         return l;
     }
@@ -51,106 +42,61 @@ public class BibliotecaManagerImpl implements BibliotecaManager {
 
     @Override
     public Libro addLibro(String ISBN, String titulo, String editorial, String añoPublicacion, String numeroEdicion, String autor, String tematica) {
-        logger.info("addLibro");
+        logger.info("addLibro - parámetros: " + ISBN + ", " + titulo + ", " + editorial);
+
         Libro newLibro = new Libro(ISBN, titulo, editorial, añoPublicacion, numeroEdicion, autor, tematica);
-        listLibros.add(newLibro);
-        logger.info("addLibro: " + newLibro);
+
+        if (listMontonDeLibros.isEmpty() || listMontonDeLibros.get(listMontonDeLibros.size() - 1).estaLleno())
+            listMontonDeLibros.add(new MontonDeLibros());
+
+        listMontonDeLibros.get(listMontonDeLibros.size() - 1).apilar(newLibro);
         return newLibro;
     }
 
-
-    @Override
-    public MontonDeLibros añadirAlMonton(List<Libro> libros) {
-        logger.info("añadirAlMonton");
-
-        if (listLibros == null || listLibros.isEmpty()) {
-            logger.error("⚠️ No hi ha llibres a la cua per afegir al muntó.");
-            return null;
-        }
-
-        List<Libro> librosDelMonton = new ArrayList<>();
-
-        int maxLibrosPorMonton = 10;
-        for (int i = 0; i < maxLibrosPorMonton && !listLibros.isEmpty(); i++) {
-            Libro libro = listLibros.poll(); // treu el primer llibre de la cua
-            librosDelMonton.add(libro);
-        }
-        MontonDeLibros m = new MontonDeLibros(librosDelMonton);
-        listMontonDeLibros.add(m);
-        return m;
-    }
-
-    public List<LibrosCatalogado> catalogar(MontonDeLibros montonDeLibros) {
+    public LibrosCatalogado catalogar() {
         logger.info("catalogar libros");
 
-        List<LibrosCatalogado> catalogados = new ArrayList<>();
+        if (listMontonDeLibros.isEmpty()) throw new RuntimeException("No hay montones para catalogar.");
 
-        if (listMontonDeLibros == null || listMontonDeLibros.isEmpty()) {
-            logger.error("No hay montones de libros para catalogar.");
-            return catalogados;
-        }
+        MontonDeLibros primero = listMontonDeLibros.get(0);
+        Libro libro = primero.desapilar();
 
-        // Escoger el montón más grande
-        MontonDeLibros m = listMontonDeLibros.stream()
-                .max(Comparator.comparingInt(MontonDeLibros::getNumerosLibrosEnMonton))
-                .orElse(null);
+        if (primero.estaVacio()) listMontonDeLibros.remove(0);
+        if (libro == null) throw new RuntimeException("No hay libros que catalogar.");
 
-        if (m == null) {
-            logger.error("No se encontró ningún montón válido.");
-            return catalogados;
-        }
+        LibrosCatalogado existente = MapLibrosCatalogado.get(libro.getTitulo());
+        if (existente != null) existente.incrementar();
+        else MapLibrosCatalogado.put(libro.getTitulo(), new LibrosCatalogado(libro));
 
-        for (Libro l : m.getMontonlibros()) {
-            LibrosCatalogado lc = MapLibrosCatalogado.get(l.getTitulo());
-
-            if (lc != null) {
-                // Ya existe -> sumamos 1
-                lc.setCantidad(lc.getCantidad() + 1);
-            } else {
-                // Nuevo libro catalogado
-                lc = new LibrosCatalogado(1, l);
-                MapLibrosCatalogado.put(l.getTitulo(), lc);
-                listLibrosCatalogado.add(lc);
-            }
-            catalogados.add(lc);
-        }
-        listMontonDeLibros.remove(m);
-        logger.info("Catalogados " + catalogados.size() + " libros del montón.");
-        return catalogados;
+        return MapLibrosCatalogado.get(libro.getTitulo());
     }
 
     @Override
     public Prestar prestarLibro(String titulo, String dni, String dataDeDevolucion) {
         logger.info("prestarLibro: " + titulo + " -> " + dni);
 
-        LibrosCatalogado libroCatalogado = MapLibrosCatalogado.get(titulo);
-        if (libroCatalogado == null) {
-            logger.error("El libro '" + titulo + "' no existe en el catálogo.");
-            return null;
-        }
+        if (!Maplectors.containsKey(dni)) throw new RuntimeException("Lector no existe");
 
-        if (libroCatalogado.getCantidad() <= 0) {
-            logger.error("No hay ejemplares disponibles de '" + titulo + "'.");
-            return null;
-        }
+        LibrosCatalogado l = MapLibrosCatalogado.values().stream()
+                .filter(c -> c.getLibro().getTitulo().equals(titulo))
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("Libro no existe"));
 
-        // Crear préstamo
-        Prestar p = new Prestar(dni, libroCatalogado.getLibro(), LocalDate.now(), dataDeDevolucion);
+        if (l.getCantidad() <= 0) throw new RuntimeException("Sin ejemplares disponibles");
+
+        l.decrementar();
+        Prestar p = new Prestar(titulo, dni, dataDeDevolucion);
         listprestars.add(p);
-
-        // Asociar préstamo al lector
-        MapPrestar.computeIfAbsent(dni, k -> new ArrayList<>()).add(p);
-
-        // Actualizar cantidad
-        libroCatalogado.setCantidad(libroCatalogado.getCantidad() - 1);
-
-        logger.info("Libro prestado correctamente: " + titulo + " a " + dni);
         return p;
     }
 
     @Override
     public List<Prestar> consultarPrestaciones(String dni) {
         logger.info("consultarPrestaciones de " + dni);
-        return MapPrestar.getOrDefault(dni, new ArrayList<>());
+        List<Prestar> res = new ArrayList<>();
+        for (Prestar p : listprestars) {
+            if (p.getLectordni().equals(dni)) res.add(p);
+        }
+        return res;
     }
 }

@@ -8,7 +8,9 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 
+
 import javax.ws.rs.*;
+import javax.ws.rs.core.GenericEntity;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.List;
@@ -88,8 +90,7 @@ public class BibliotecaService {
     })
     @Produces(MediaType.APPLICATION_JSON)
     public Response catalogar() {
-        List<LibrosCatalogado> catalogados = bm.catalogar(null);
-        return Response.ok(catalogados).build();
+        return Response.ok(bm.catalogar()).build();
     }
 
     //Prestar libro
@@ -97,7 +98,7 @@ public class BibliotecaService {
     @Path("/prestar")
     @ApiOperation(value = "Prestar un libro a un lector")
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Libro prestado correctamente", response = Prestar.class),
+            @ApiResponse(code = 200, message = "Libro prestado correctamente", response = Prestar.class, responseContainer = "List"),
             @ApiResponse(code = 404, message = "Libro no encontrado o sin stock")
     })
     @Produces(MediaType.APPLICATION_JSON)
@@ -129,9 +130,9 @@ public class BibliotecaService {
 
         if (dni == null)
             return Response.status(Response.Status.BAD_REQUEST).entity("El DNI es obligatorio").build();
-
         List<Prestar> prestamos = bm.consultarPrestaciones(dni);
-        return Response.ok(prestamos).build();
+        GenericEntity<List<Prestar>> entity = new GenericEntity<List<Prestar>>(prestamos) {};
+        return Response.ok(entity).build();
     }
 
 }
