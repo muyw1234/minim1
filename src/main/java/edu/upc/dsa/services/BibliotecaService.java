@@ -78,7 +78,8 @@ public class BibliotecaService {
                     .entity("Parámetros ISBN, titulo y editorial son obligatorios").build();
 
         Libro libro = bm.addLibro(ISBN, titulo, editorial, anioPublicacion, numeroEdicion, autor, tematica);
-        return Response.status(Response.Status.CREATED).entity(libro).build();
+        GenericEntity<Libro> entity = new GenericEntity<Libro>(libro) {};
+        return Response.status(Response.Status.CREATED).entity(entity).build();
     }
 
     //Catalogar
